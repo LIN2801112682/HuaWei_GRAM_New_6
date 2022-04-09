@@ -16,41 +16,34 @@ func GenerateDictionaryTree(filename string, qmin int, qmax int, T int) *TrieTre
 		fmt.Println(err)
 	}
 	buff := bufio.NewReader(data)
-	var sum = 0
+	var sum1 int64 = 0
 	for {
 		data, _, eof := buff.ReadLine()
 		if eof == io.EOF {
 			break
 		}
 		str := (string)(data)
-		start2 := time.Now()
+		start1 := time.Now().UnixMicro()
 		for i := 0; i < len(str)-qmax; i++ {
 			substring := str[i : i+qmax]
-			//字符串变字符串数组
-			gram := make([]string, qmax)
-			for j := 0; j < qmax; j++ {
-				gram[j] = substring[j : j+1]
-			}
-			tree.InsertIntoTrieTree(&gram)
+			tree.InsertIntoTrieTree(substring)
 		}
 		for i := len(str) - qmax; i < len(str)-qmin+1; i++ {
 			substring := str[i:len(str)]
-			gram := make([]string, len(str)-i)
-			for j := 0; j < len(str)-i; j++ {
-				gram[j] = substring[j : j+1]
-			}
-			tree.InsertIntoTrieTree(&gram)
+			tree.InsertIntoTrieTree(substring)
 		}
-		end2 := time.Since(start2).Microseconds()
-		sum = int(end2) + sum
+		end1 := time.Now().UnixMicro()
+		sum1 = (end1 - start1) + sum1
 	}
-	start1 := time.Now()
+	var sum2 int64 = 0
+	start2 := time.Now().UnixMicro()
 	tree.PruneTree(T)
-	end1 := time.Since(start1).Microseconds()
-	sum = int(end1) + sum
+	end2 := time.Now().UnixMicro()
+	sum2 = (end2 - start2) + sum2
 	tree.UpdateRootFrequency()
-
-	fmt.Println("构建字典树花费时间（us）：", sum)
+	fmt.Println("构建字典树花费时间（us）：", sum1+sum2)
+	fmt.Println("构建树花费时间（us）：", sum1)
+	fmt.Println("剪枝花费时间（us）：", sum2)
 	//tree.PrintTree()
 	return tree.root
 }

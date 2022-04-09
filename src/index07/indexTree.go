@@ -50,41 +50,55 @@ func NewIndexTree(qmin int, qmax int) *IndexTree {
 	}
 }
 
-//将gram插入IndexTree上
-//IndexTree:待插入的树
-//gram:待插入字符串数组
-//sid:字符串所属sid
-//position:字符串在sid中的位置
-func (tree *IndexTree) InsertIntoIndexTree(gram *[]string, sid SeriesId, position int) {
-	//初始化node、qmin
+//Insert gram into IndexTree  position:The starting position of the strat in the statement
+func (tree *IndexTree) InsertIntoIndexTree(gram string, sid SeriesId, position int) *IndexTreeNode {
 	node := tree.root
-	//qmin := tree.qmin
-	// 孩子节点在childrenlist中的位置
-	var childindex = 0
-	for i, char := range *gram {
-		childindex = GetIndexNode(node.children, (*gram)[i])
-		if childindex == -1 {
-			// childrenlist里没有该节点
-			currentnode := NewIndexTreeNode(char)
-			node.children = append(node.children, currentnode)
-			node = currentnode
+	var addr *IndexTreeNode
+	var childIndex int8 = -1
+	for i := 0; i < len(gram); i++ {
+		childIndex = GetIndexNode(node.children, gram[i])
+		if childIndex == -1 {
+			currentNode := NewIndexTreeNode(string(gram[i]))
+			node.children[gram[i]] = currentNode
+			node = currentNode
 		} else {
-			//childrenlist里有该节点
-			//childrenindex为该节点在数组中的位置
-			node = node.children[childindex]
+			node = node.children[uint8(childIndex)]
 			node.frequency++
 		}
-		//从root的孩子节点开始判断，少一层故大于等于 qmin-1 不是qmin
-		//if i >= qmin-1 {
-		//	node.isleaf = true
-		//}
-		if i == len(*gram)-1 { //改成是否是叶子节点判断node.isleaf是不行的！！！这样就会改变索引结构
-			//叶子节点，需要挂倒排链表
+		if i == len(gram)-1 { //Leaf node, need to hook up linkedList
 			node.isleaf = true
-			if _, ok := node.invertedIndex[sid]; !ok { //key中没有sid 创建sid对应的倒排
+			if _, ok := node.invertedIndex[sid]; !ok { //There is no sid in the key, to create an inverted structure corresponding to the sid
 				node.InsertSidAndPosArrToInvertedIndexMap(sid, position)
-			} else { //寻找相同sid下增加posArray即可
+			} else { //Find the same sid and add posArray[j]
 				node.InsertPosArrToInvertedIndexMap(sid, position)
+			}
+			addr = node
+		}
+	}
+	return addr
+}
+
+func (tree *IndexTree) InsertOnlyGramIntoIndexTree(gramSubs []SubGramOffset, addr *IndexTreeNode) {
+	var childIndex int8 = -1
+	for k := 0; k < len(gramSubs); k++ {
+		gram := gramSubs[k].subGram
+		offset := gramSubs[k].offset
+		node := tree.root
+		for i := 0; i < len(gram); i++ {
+			childIndex = GetIndexNode(node.children, gram[i])
+			if childIndex == -1 {
+				currentNode := NewIndexTreeNode(string(gram[i]))
+				node.children[gram[i]] = currentNode
+				node = currentNode
+			} else {
+				node = node.children[uint8(childIndex)]
+				node.frequency++
+			}
+			if i == len(gram)-1 { //Leaf node, need to hook up linkedList
+				node.isleaf = true
+				if _, ok := node.addrOffset[addr]; !ok {
+					node.addrOffset[addr] = offset
+				}
 			}
 		}
 	}
@@ -94,7 +108,6 @@ func (tree *IndexTree) PrintIndexTree() {
 	tree.root.PrintIndexTreeNode(0)
 }
 
-//更新root节点的频率
 func (tree *IndexTree) UpdateIndexRootFrequency() {
 	for _, child := range tree.root.children {
 		tree.root.frequency += child.frequency
@@ -102,19 +115,19 @@ func (tree *IndexTree) UpdateIndexRootFrequency() {
 	tree.root.frequency--
 }
 
-//计算倒排索引大小
+//Calculate the length of each invertedList
 var Res []int
 
 func (root *IndexTreeNode) FixInvertedIndexSize() {
-	for i := 0; i < len(root.children); i++ {
-		if root.children[i].isleaf == true {
-			Res = append(Res, len(root.children[i].invertedIndex))
+	for _, child := range root.children {
+		if child.isleaf == true {
+			Res = append(Res, len(child.invertedIndex)) //The append function must be used, and i cannot be used for variable addition, because there is no make initialization
 		}
-		root.children[i].FixInvertedIndexSize()
+		child.FixInvertedIndexSize()
 	}
 }
 
-//查询索引项
+//Calculate the length of each gram
 var Grams []string
 var temp string
 
@@ -122,17 +135,19 @@ func (root *IndexTreeNode) SearchGramsFromIndexTree() {
 	if root == nil {
 		return
 	}
-	for i := 0; i < len(root.children); i++ {
-		temp += root.children[i].data
-		if root.children[i].isleaf == true {
-			Grams = append(Grams, temp)
+	for _, child := range root.children {
+		if child != nil {
+			temp += child.data
+			if child.isleaf == true {
+				Grams = append(Grams, temp)
+			}
+			child.SearchGramsFromIndexTree()
+			temp = temp[0 : len(temp)-1]
 		}
-		root.children[i].SearchGramsFromIndexTree()
-		temp = temp[0 : len(temp)-1]
 	}
 }
 
-//移除相同索引项
+//remove the same index entry
 func RemoveSliceInvertIndex(grams []string) (ret []string) {
 	n := len(grams)
 	for i := 0; i < n; i++ {

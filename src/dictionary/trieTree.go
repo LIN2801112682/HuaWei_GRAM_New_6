@@ -38,37 +38,28 @@ func NewTrieTree(qmin int, qmax int) *TrieTree {
 	}
 }
 
-//将gram插入trieTree上
-//TrieTree:待插入的树
-//gram:待插入字符串数组
-func (tree *TrieTree) InsertIntoTrieTree(gram *[]string) {
-	//初始化node、qmin
+// Insert gram on TrieTree
+func (tree *TrieTree) InsertIntoTrieTree(gram string) {
 	node := tree.root
 	qmin := tree.qmin
-	// 孩子节点在childrenlist中的位置
-	var childindex = 0
-	for i, char := range *gram {
-		childindex = GetNode(node.children, (*gram)[i])
-		if childindex == -1 {
-			// childrenlist里没有该节点
-			currentnode := NewTrieTreeNode(char)
-			node.children = append(node.children, currentnode)
-			node = currentnode
-		} else {
-			//childrenlist里有该节点
-			//childrenindex为该节点在数组中的位置
-			node = node.children[childindex]
+	var childIndex int8 = -1 // The position of the child node in the ChildrenMap
+	for i := 0; i < len(gram); i++ {
+		childIndex = GetNode(node.children, gram[i])
+		if childIndex == -1 { // There is no such node in the ChildrenMap
+			currentNode := NewTrieTreeNode(string(gram[i]))
+			node.children[gram[i]] = currentNode
+			node = currentNode
+		} else { //There is this node in the ChildrenMap, so childrenIndex is the position of the node in the ChildrenMap
+			node = node.children[uint8(childIndex)]
 			node.frequency++
 		}
-		if i >= qmin-1 {
+		if i >= qmin-1 { //As long as the gram length is greater than qmin - 1, it is a leaf node
 			node.isleaf = true
 		}
 	}
 }
 
-//剪枝
-//TrieTree:待修剪的树
-//T:阈值
+//Pruning TrieTree
 func (tree *TrieTree) PruneTree(T int) {
 	tree.root.PruneNode(T)
 }
@@ -77,7 +68,7 @@ func (tree *TrieTree) PrintTree() {
 	tree.root.PrintTreeNode(0)
 }
 
-//更新root节点的频率
+//Update the root node
 func (tree *TrieTree) UpdateRootFrequency() {
 	for _, child := range tree.root.children {
 		tree.root.frequency += child.frequency

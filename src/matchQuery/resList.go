@@ -1,6 +1,8 @@
-package matchQuery2
+package matchQuery
 
-import "index07"
+import (
+	"index07"
+)
 
 type ResList struct {
 	sid      index07.SeriesId

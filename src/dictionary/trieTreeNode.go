@@ -5,44 +5,44 @@ import (
 	"sort"
 )
 
-//字典节点信息
+//Dictionary node information
 type TrieTreeNode struct {
 	data      string
 	frequency int
-	children  []*TrieTreeNode
+	children  map[uint8]*TrieTreeNode //The key is the index, and the value is the children. The spatial comparison array does not change, and the query time is reduced.
 	isleaf    bool
 }
 
-func (t *TrieTreeNode) Data() string {
-	return t.data
+func (node *TrieTreeNode) Data() string {
+	return node.data
 }
 
-func (t *TrieTreeNode) SetData(data string) {
-	t.data = data
+func (node *TrieTreeNode) SetData(data string) {
+	node.data = data
 }
 
-func (t *TrieTreeNode) Frequency() int {
-	return t.frequency
+func (node *TrieTreeNode) Frequency() int {
+	return node.frequency
 }
 
-func (t *TrieTreeNode) SetFrequency(frequency int) {
-	t.frequency = frequency
+func (node *TrieTreeNode) SetFrequency(frequency int) {
+	node.frequency = frequency
 }
 
-func (t *TrieTreeNode) Children() []*TrieTreeNode {
-	return t.children
+func (node *TrieTreeNode) Children() map[uint8]*TrieTreeNode {
+	return node.children
 }
 
-func (t *TrieTreeNode) SetChildren(children []*TrieTreeNode) {
-	t.children = children
+func (node *TrieTreeNode) SetChildren(children map[uint8]*TrieTreeNode) {
+	node.children = children
 }
 
-func (t *TrieTreeNode) Isleaf() bool {
-	return t.isleaf
+func (node *TrieTreeNode) Isleaf() bool {
+	return node.isleaf
 }
 
-func (t *TrieTreeNode) SetIsleaf(isleaf bool) {
-	t.isleaf = isleaf
+func (node *TrieTreeNode) SetIsleaf(isleaf bool) {
+	node.isleaf = isleaf
 }
 
 func NewTrieTreeNode(data string) *TrieTreeNode {
@@ -50,11 +50,10 @@ func NewTrieTreeNode(data string) *TrieTreeNode {
 		data:      data,
 		frequency: 1,
 		isleaf:    false,
-		children:  make([]*TrieTreeNode, 0),
+		children:  make(map[uint8]*TrieTreeNode),
 	}
 }
 
-//剪枝
 func (node *TrieTreeNode) PruneNode(T int) {
 	if !node.isleaf {
 		for _, child := range node.children {
@@ -69,53 +68,57 @@ func (node *TrieTreeNode) PruneNode(T int) {
 	}
 }
 
-//剪枝策略<=T
+//Pruning strategy1: freq <= T
 func (node *TrieTreeNode) PruneStrategyLessT() {
-	node.children = make([]*TrieTreeNode, 0)
+	node.children = make(map[uint8]*TrieTreeNode)
 }
 
-//剪枝策略>T
-//剪掉最大子集，若无法剪枝则递归剪子树
+//Pruning strategy2: freq > T
+//Prune the largest subset, then recursively prune the tree
 func (node *TrieTreeNode) PruneStrategyMoreT(T int) {
-	arraylength := len(node.children)
-	frequencylist := make([]int, arraylength)
-	for i := 0; i < arraylength; i++ {
-		frequencylist[i] = node.children[i].frequency
+	var freqList []FreqList
+	freqList = make([]FreqList, 128) //一个方法是make指定容量的结构体切片 可通过k取到freqList中每个元素  另一个方法就是不用make，new一个freqList对象再用append函数加入（类似查询中）
+	k := 0
+	for _, child := range node.children {
+		freqList[k].char = child.data
+		freqList[k].freq = child.frequency
+		k++
 	}
-	sort.Ints(frequencylist)
-	totoalsum := 0
-	for i := arraylength - 1; i >= 0; i-- {
-		//从大到小遍历数组
-		if totoalsum+frequencylist[i] <= T {
-			totoalsum = totoalsum + frequencylist[i]
-			for j, child := range node.children {
-				// TODO 剪枝策略有问题！需要修改
-				if child.frequency == frequencylist[i] {
-					//找到对应枝条，进行剪枝
-					//删除该孩子节点
-					node.children = append(node.children[:j], node.children[j+1:]...)
-					break
-				}
+	sort.SliceStable(freqList, func(i, j int) bool {
+		if freqList[i].freq < freqList[j].freq {
+			return true
+		}
+		return false
+	})
+	var totoalSum = 0
+	for i := k - 1; i >= 0; i-- {
+		//Traverse freqList from largest to smallest
+		if totoalSum+freqList[i].freq <= T {
+			totoalSum = totoalSum + freqList[i].freq
+			var index uint8
+			if freqList[i].char != "" {
+				index = freqList[i].char[0]
+			}
+			if node.children[index] != nil {
+				delete(node.children, index)
 			}
 		}
 	}
-	// 不存在最大子集
+	// recursively prune the tree
 	for _, child := range node.children {
-		child.PruneStrategyMoreT(T)
+		child.PruneNode(T)
 	}
 }
 
-//判断children有无此节点
-func GetNode(children []*TrieTreeNode, char string) int {
-	for i, child := range children {
-		if child.data == char {
-			return i
-		}
+// Determine whether children have this node, key is the character ASCII code value
+func GetNode(children map[uint8]*TrieTreeNode, char uint8) int8 {
+	if children[char] != nil {
+		return int8(char)
 	}
 	return -1
 }
 
-//输出以node为根的子树
+//输出以node为根的子树 因为children用map存储，故遍历是无序的，但是在内存中是按照ASCII有序排列，但是查找也不需二分，map使用hashmap O（1）查找
 func (node *TrieTreeNode) PrintTreeNode(level int) {
 	fmt.Println()
 	for i := 0; i < level; i++ {

@@ -13,6 +13,7 @@ import (
 
 //根据一批日志数据通过字典树划分VG，增加到索引项集中
 func AddIndex(filename string, qmin int, qmax int, root *dictionary.TrieTreeNode, indexTree *index07.IndexTree) *index07.IndexTree {
+	start := time.Now().UnixMicro()
 	data, err := os.Open(filename)
 	defer data.Close()
 	if err != nil {
@@ -20,7 +21,6 @@ func AddIndex(filename string, qmin int, qmax int, root *dictionary.TrieTreeNode
 	}
 	buff := bufio.NewReader(data)
 	id := indexTree.Cout()
-	var sum = 0
 	for {
 		data, _, eof := buff.ReadLine()
 		if eof == io.EOF {
@@ -32,30 +32,30 @@ func AddIndex(filename string, qmin int, qmax int, root *dictionary.TrieTreeNode
 		timeStamp := time.Now().Unix()
 		sid := index07.NewSeriesId(int32(id), timeStamp)
 		str := string(data)
-		start2 := time.Now()
-		index07.VGCons(root, qmin, qmax, str, vgMap)
+		index07.VGConsBasicIndex(root, qmin, qmax, str, vgMap)
 		var keys = []int{}
 		for key := range vgMap {
 			keys = append(keys, key)
 		}
 		//对map中的key进行排序（map遍历是无序的）
 		sort.Sort(sort.IntSlice(keys))
+		var addr *index07.IndexTreeNode
 		for i := 0; i < len(keys); i++ {
 			vgKey := keys[i]
-			//字符串变字符串数组
-			gram := make([]string, len(vgMap[vgKey]))
-			for j := 0; j < len(vgMap[vgKey]); j++ {
-				gram[j] = vgMap[vgKey][j : j+1]
+			gram := vgMap[vgKey]
+			addr = indexTree.InsertIntoIndexTree(gram, sid, vgKey)
+			if len(gram) > qmin && len(gram) <= qmax { //Generate all index entries between qmin+1 - len(gram)
+				index07.GramSubs = make([]index07.SubGramOffset, 0)
+				index07.GenerateQmin2QmaxGrams(gram, qmin)
+				indexTree.InsertOnlyGramIntoIndexTree(index07.GramSubs, addr)
 			}
-			indexTree.InsertIntoIndexTree(&gram, *sid, vgKey)
 		}
-		end2 := time.Since(start2).Microseconds()
-		sum = int(end2) + sum
 	}
 	indexTree.SetCout(id)
 	indexTree.Root().SetFrequency(1)
 	indexTree.UpdateIndexRootFrequency()
-	fmt.Println("新增索引项集花费时间（us）：", sum)
+	end := time.Now().UnixMicro()
+	fmt.Println("新增索引项集花费时间（us）：", end-start)
 	//indexTree.PrintIndexTree()
 	return indexTree
 }

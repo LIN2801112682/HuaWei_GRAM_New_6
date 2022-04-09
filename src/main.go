@@ -4,14 +4,14 @@ import (
 	"dictionary"
 	"fmt"
 	"index07"
-	_ "matchQuery1"
-	"matchQuery2"
+	"matchQuery"
 	"runtime"
 )
 
 func TraceMemStats() {
 	var ms runtime.MemStats
 	runtime.ReadMemStats(&ms)
+
 	fmt.Printf("Alloc:%d(bytes) HeapIdle:%d(bytes) HeapReleased:%d(bytes)", ms.Alloc, ms.HeapIdle, ms.HeapReleased)
 }
 
@@ -30,11 +30,12 @@ func main() {
 	fmt.Println("索引项集内存占用大小：")
 	TraceMemStats()
 	fmt.Println()
-	_, indexTreeNode := index07.GenerateIndexTree("src/resources/50000Index.txt", 2, 12, root) //
+	_, indexTreeNode := index07.GenerateIndexTree("src/resources/5000Dic.txt", 2, 12, root) //
 	fmt.Println()
 	TraceMemStats()
 	fmt.Println()
 
+	//fmt.Println(unsafe.Sizeof(indexRoot))
 	/*indexTreeNode.FixInvertedIndexSize()
 	sort.SliceStable(index07.Res, func(i, j int) bool {
 		if index07.Res[i] < index07.Res[j]  {
@@ -72,13 +73,49 @@ func main() {
 	//TraceMemStats()
 	fmt.Println()*/
 
-	//resInt := matchQuery2.MatchSearch("GET /english", root, indexTreeNode, 2, 12)
-	var searchQuery = [9]string{"GET", "GET /english", "GET /english/images/", "GET /images/", "GET /english/images/team_hm_header_shad.gif HTTP/1.0", "GET /images/s102325.gif HTTP/1.0", "GET /english/history/history_of/images/cup/", "/images/space.gif", "GET / HTTP/1.0"}
-	for i := 0; i < 9; i++ {
-		resInt := matchQuery2.MatchSearch(searchQuery[i], root, indexTreeNode, 2, 12) //get english venues
+	var searchQuery1 = [10]string{"GET", "GET /english", "GET /english/images/", "GET /images/", "GET /english/images/team_hm_header_shad.gif HTTP/1.0", "GET /images/s102325.gif HTTP/1.0", "GET /english/history/history_of/images/cup/", "/images/space.gif", "GET / HTTP/1.0", "11187"}
+	for i := 0; i < 10; i++ {
+		resInt := matchQuery.MatchSearch(searchQuery1[i], root, indexTreeNode, 2, 12) //get english venues
 		//fmt.Println(resInt)
 		fmt.Println(len(resInt))
 		fmt.Println("==================================================")
 	}
-	//fmt.Println(len(resInt))
+
+	var searchQuery2 = [10]string{"french", "tickets", "ticket_quest_bg2", "HTTP/1.1", "1.0", "gif", "HTTP", "football", "images", "s102438"}
+	for i := 0; i < 10; i++ {
+		resInt := matchQuery.MatchSearch(searchQuery2[i], root, indexTreeNode, 2, 12) //get english venues
+		//fmt.Println(resInt)
+		fmt.Println(len(resInt))
+		fmt.Println("==================================================")
+	}
+
+	var searchQuery3 = [10]string{"history_of", "comp_stage2_brc_topr", "hm_linkf", "nav_bg_bottom", "cal_paris", "mascot", "venues", "index", "space.gif", "GET /english/frntpage.htm HTTP/1.0"}
+	for i := 0; i < 10; i++ {
+		resInt := matchQuery.MatchSearch(searchQuery3[i], root, indexTreeNode, 2, 12) //get english venues
+		//fmt.Println(resInt)
+		fmt.Println(len(resInt))
+		fmt.Println("==================================================")
+	}
+
+	/*resInt := matchQuery.MatchSearch("HTTP", root, indexTreeNode, 2, 12)
+	fmt.Println(resInt)
+	fmt.Println(len(resInt))*/
+
+	/*map1 := make(map[index07.SeriesId][]int)
+	map2 := make(map[index07.SeriesId][]int)
+	var a = []int{0,1,2}
+	var b = []int{0,1,6}
+	var c = []int{0,1,2,3,4}
+	var d = []int{0,1}
+	map1[index07.NewSeriesId(1,12)] = a
+	map1[index07.NewSeriesId(2,12)] = b
+	map2[index07.NewSeriesId(2,12)] = c
+	map2[index07.NewSeriesId(3,12)] = d
+	fmt.Println(map1)
+	fmt.Println(map2)
+	matchQuery.MergeMapsInvertLists(map1,map2)
+
+	fmt.Println(map1)
+	fmt.Println(map2)*/
+
 }
