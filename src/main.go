@@ -81,7 +81,7 @@ func main() {
 		fmt.Println("==================================================")
 	}
 
-	var searchQuery2 = [10]string{"french", "tickets", "ticket_quest_bg2", "HTTP/1.1", "1.0", "gif", "HTTP", "football", "images", "s102438"}
+	var searchQuery2 = [10]string{"french", "nav_tickets_off.gif", "ticket_quest_bg2", "HTTP/1.1", "1.0", "football.gif", "HTTP", "images", "s102438", "venue_paris_stad_header.gif"}
 	for i := 0; i < 10; i++ {
 		resInt := matchQuery.MatchSearch(searchQuery2[i], root, indexTreeNode, 2, 12) //get english venues
 		//fmt.Println(resInt)
@@ -89,7 +89,7 @@ func main() {
 		fmt.Println("==================================================")
 	}
 
-	var searchQuery3 = [10]string{"history_of", "comp_stage2_brc_topr", "hm_linkf", "nav_bg_bottom", "cal_paris", "mascot", "venues", "index", "space.gif", "GET /english/frntpage.htm HTTP/1.0"}
+	var searchQuery3 = [10]string{"nav_history_off.gif", "mascot.html", "venues", "index.html", "space.gif", "GET /english/frntpage.htm HTTP/1.0", "comp_stage2_brc_topr.gif", "hm_linkf.gif", "nav_bg_bottom.jpg", "cal_paris.gif"}
 	for i := 0; i < 10; i++ {
 		resInt := matchQuery.MatchSearch(searchQuery3[i], root, indexTreeNode, 2, 12) //get english venues
 		//fmt.Println(resInt)
