@@ -13,18 +13,20 @@ import (
 func MatchSearch(searchStr string, root *dictionary.TrieTreeNode, indexRoot *index07.IndexTreeNode, qmin int, qmax int) []index07.SeriesId {
 	//划分查询串为VG
 	start1 := time.Now().UnixMicro()
-	var vgMap map[int]string
-	vgMap = make(map[int]string)
+	var vgMap = make(map[int]string)
 	index07.VGConsBasicIndex(root, qmin, qmax, searchStr, vgMap)
 	fmt.Println(vgMap)
 
 	//查询每个gram对应倒排个数,并进行排序,把索引项放入sortGramInvertList
-	var sortSumInvertList []SortKey
+	var sortSumInvertList = make([]SortKey, 0)
 	var sortGramInvertList = make(map[string]index07.Inverted_index)
+	invertIndex = nil
+	indexNode = nil
 	for x := range vgMap {
 		gram := vgMap[x]
 		if gram != "" {
 			invertIndex = nil
+			indexNode = nil
 			var invertIndex2 index07.Inverted_index
 			var invertIndex3 index07.Inverted_index
 			SearchInvertedListFromCurrentNode(gram, indexRoot, 0)
@@ -49,10 +51,10 @@ func MatchSearch(searchStr string, root *dictionary.TrieTreeNode, indexRoot *ind
 	})
 	end1 := time.Now().UnixMicro()
 
-	var resArr []index07.SeriesId
+	var resArr = make([]index07.SeriesId, 0)
 	preSeaPosition := 0
-	var preInverPositionDis []PosList
-	var nowInverPositionDis []PosList
+	var preInverPositionDis = make([]PosList, 0)
+	var nowInverPositionDis = make([]PosList, 0)
 	start2 := time.Now().UnixMicro()
 	for m := 0; m < len(sortSumInvertList); m++ {
 		gramArr := sortSumInvertList[m].gram
