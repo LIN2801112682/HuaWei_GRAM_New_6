@@ -30,7 +30,7 @@ func main() {
 	fmt.Println("索引项集内存占用大小：")
 	TraceMemStats()
 	fmt.Println()
-	_, indexTreeNode := index07.GenerateIndexTree("src/resources/5000Dic.txt", 2, 12, root) //
+	_, indexTreeNode := index07.GenerateIndexTree("src/resources/500Dic.txt", 2, 12, root) //
 	fmt.Println()
 	TraceMemStats()
 	fmt.Println()
@@ -97,9 +97,9 @@ func main() {
 		fmt.Println("==================================================")
 	}
 
-	/*resInt := matchQuery.MatchSearch("HTTP", root, indexTreeNode, 2, 12)
-	fmt.Println(resInt)
-	fmt.Println(len(resInt))*/
+	//resInt := matchQuery.MatchSearch("GET /english/images/", root, indexTreeNode, 2, 12)
+	//fmt.Println(resInt)
+	//fmt.Println(len(resInt))
 
 	/*map1 := make(map[index07.SeriesId][]int)
 	map2 := make(map[index07.SeriesId][]int)

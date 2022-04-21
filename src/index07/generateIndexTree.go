@@ -127,11 +127,9 @@ func IsSubStrOfVG(t string, vgMap map[int]string) bool {
 		str := vgMap[vgKey]
 		if str == t {
 			flag = false
-		}
-		if i == (len(keys)-1) && strings.Contains(str, t) { //vgMap中最后一个gram包含了t 不划分
+		} else if i == (len(keys)-1) && strings.Contains(str, t) { //vgMap中最后一个gram包含了t 不划分
 			flag = true
-		}
-		if i < (len(keys)-1) && strings.Contains(str, t) { //vgMap中不是最后一个gram包含了t 划分  觉得这里会划分出很多
+		} else if i < (len(keys)-1) && strings.Contains(str, t) { //vgMap中不是最后一个gram包含了t 划分  觉得这里会划分出很多
 			flag = false
 		}
 	}

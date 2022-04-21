@@ -19,26 +19,22 @@ func MatchSearch(searchStr string, root *dictionary.TrieTreeNode, indexRoot *ind
 
 	//查询每个gram对应倒排个数,并进行排序,把索引项放入sortGramInvertList
 	var sortSumInvertList = make([]SortKey, 0)
-	var sortGramInvertList = make(map[string]index07.Inverted_index)
-	invertIndex = nil
-	indexNode = nil
 	for x := range vgMap {
 		gram := vgMap[x]
 		if gram != "" {
-			invertIndex = nil
-			indexNode = nil
+			var invertIndex index07.Inverted_index
+			var indexNode *index07.IndexTreeNode
 			var invertIndex2 index07.Inverted_index
 			var invertIndex3 index07.Inverted_index
-			SearchInvertedListFromCurrentNode(gram, indexRoot, 0)
+			invertIndex, indexNode = SearchInvertedListFromCurrentNode(gram, indexRoot, 0, invertIndex, indexNode)
 			invertIndex2 = SearchInvertedListFromChildrensOfCurrentNode(indexNode, nil)
 			if indexNode != nil && len(indexNode.AddrOffset()) > 0 {
 				invertIndex3 = TurnAddr2InvertLists(indexNode.AddrOffset(), invertIndex3)
 			}
 			invertIndex = MergeMapsInvertLists(invertIndex2, invertIndex)
 			invertIndex = MergeMapsInvertLists(invertIndex3, invertIndex)
-			//去重 合并
-			sortSumInvertList = append(sortSumInvertList, NewSortKey(len(invertIndex), gram))
-			sortGramInvertList[gram] = invertIndex
+			//fmt.Println(gram, len(invertIndex))
+			sortSumInvertList = append(sortSumInvertList, NewSortKey(x, len(invertIndex), gram, invertIndex))
 		}
 	}
 	//fmt.Println(sortGramInvertList)
@@ -60,13 +56,9 @@ func MatchSearch(searchStr string, root *dictionary.TrieTreeNode, indexRoot *ind
 		gramArr := sortSumInvertList[m].gram
 		var nowSeaPosition int
 		if gramArr != "" {
-			for key := range vgMap {
-				if vgMap[key] == gramArr {
-					nowSeaPosition = key
-				}
-			}
-			invertIndex = nil
-			invertIndex = sortGramInvertList[gramArr]
+			nowSeaPosition = sortSumInvertList[m].offset
+			var invertIndex index07.Inverted_index = nil
+			invertIndex = sortSumInvertList[m].invertedIndex
 			if invertIndex == nil {
 				return nil
 			}
@@ -121,20 +113,18 @@ func MatchSearch(searchStr string, root *dictionary.TrieTreeNode, indexRoot *ind
 	return resArr
 }
 
-var invertIndex index07.Inverted_index
-var indexNode *index07.IndexTreeNode
-
-func SearchInvertedListFromCurrentNode(gramArr string, indexRoot *index07.IndexTreeNode, i int) {
+func SearchInvertedListFromCurrentNode(gramArr string, indexRoot *index07.IndexTreeNode, i int, invertIndex1 index07.Inverted_index, indexNode *index07.IndexTreeNode) (index07.Inverted_index, *index07.IndexTreeNode) {
 	if indexRoot == nil {
-		return
+		return invertIndex1, indexNode
 	}
 	if i < len(gramArr)-1 && indexRoot.Children()[gramArr[i]] != nil {
-		SearchInvertedListFromCurrentNode(gramArr, indexRoot.Children()[gramArr[i]], i+1)
+		invertIndex1, indexNode = SearchInvertedListFromCurrentNode(gramArr, indexRoot.Children()[gramArr[i]], i+1, invertIndex1, indexNode)
 	}
 	if i == len(gramArr)-1 && indexRoot.Children()[gramArr[i]] != nil {
-		invertIndex = indexRoot.Children()[gramArr[i]].InvertedIndex()
+		invertIndex1 = indexRoot.Children()[gramArr[i]].InvertedIndex()
 		indexNode = indexRoot.Children()[gramArr[i]]
 	}
+	return invertIndex1, indexNode
 }
 
 func SearchInvertedListFromChildrensOfCurrentNode(indexNode *index07.IndexTreeNode, invertIndex2 index07.Inverted_index) index07.Inverted_index {
@@ -157,13 +147,12 @@ func TurnAddr2InvertLists(addrOffset map[*index07.IndexTreeNode]int, invertIndex
 	var res index07.Inverted_index
 	for addr, offset := range addrOffset { //获取当前地址节点和他所有子节点的所有倒排
 		invertIndex3 = nil
-		//不需要addr的addrOffset吗？是的不需要？
 		invertIndex3 = DeepCopy(addr.InvertedIndex())
+		//不需要addr的addrOffset吗？是的不需要？
 		/*if addr != nil && len(addr.AddrOffset()) > 0 {
 			index := TurnAddr2InvertLists(addr.AddrOffset(), nil)
 			invertIndex3 = MergeMapsInvertLists(index, invertIndex3)
 		}*/
-
 		//invertIndex3 = SearchInvertedListFromChildrensOfCurrentNode(addr, invertIndex3)
 		for _, list := range invertIndex3 {
 			for i := 0; i < len(list); i++ {
@@ -214,22 +203,3 @@ func DeepCopy(src map[index07.SeriesId][]int) map[index07.SeriesId][]int {
 	gob.NewDecoder(bytes.NewBuffer(buf.Bytes())).Decode(&dst)
 	return dst
 }
-
-/*func Copy(value interface{}) interface{} {
-	if valueMap, ok := value.(map[string]interface{}); ok {
-		newMap := make(map[string]interface{})
-		for k, v := range valueMap {
-			newMap[k] = Copy(v)
-		}
-
-		return newMap
-	} else if valueSlice, ok := value.([]interface{}); ok {
-		newSlice := make([]interface{}, len(valueSlice))
-		for k, v := range valueSlice {
-			newSlice[k] = Copy(v)
-		}
-
-		return newSlice
-	}
-	return value
-}*/

@@ -1,16 +1,28 @@
 package matchQuery
 
+import "index07"
+
 type SortKey struct {
+	offset             int
 	sizeOfInvertedList int
 	gram               string
+	invertedIndex      index07.Inverted_index
 }
 
-func (s *SortKey) Pos() int {
+func (s *SortKey) Offset() int {
+	return s.offset
+}
+
+func (s *SortKey) SetOffset(offset int) {
+	s.offset = offset
+}
+
+func (s *SortKey) SizeOfInvertedList() int {
 	return s.sizeOfInvertedList
 }
 
-func (s *SortKey) SetPos(pos int) {
-	s.sizeOfInvertedList = pos
+func (s *SortKey) SetSizeOfInvertedList(sizeOfInvertedList int) {
+	s.sizeOfInvertedList = sizeOfInvertedList
 }
 
 func (s *SortKey) Gram() string {
@@ -21,9 +33,19 @@ func (s *SortKey) SetGram(gram string) {
 	s.gram = gram
 }
 
-func NewSortKey(pos int, gram string) SortKey {
+func (s *SortKey) InvertedIndex() index07.Inverted_index {
+	return s.invertedIndex
+}
+
+func (s *SortKey) SetInvertedIndex(invertedIndex index07.Inverted_index) {
+	s.invertedIndex = invertedIndex
+}
+
+func NewSortKey(offset int, pos int, gram string, invertIndex index07.Inverted_index) SortKey {
 	return SortKey{
+		offset:             offset,
 		sizeOfInvertedList: pos,
 		gram:               gram,
+		invertedIndex:      invertIndex,
 	}
 }
