@@ -91,6 +91,7 @@ var GramSubs []SubGramOffset
 //		}
 //	}
 //}
+
 func GenerateQmin2QmaxGrams(gram string, qmin int) {
 	length := len(gram)
 	for i := 1; i <= length-qmin; i++ {

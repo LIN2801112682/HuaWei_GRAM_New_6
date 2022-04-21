@@ -62,6 +62,7 @@ func MatchSearch(searchStr string, root *dictionary.TrieTreeNode, indexRoot *ind
 			if invertIndex == nil {
 				return nil
 			}
+
 			if m == 0 {
 				for sid := range invertIndex {
 					preInverPositionDis = append(preInverPositionDis, NewPosList(sid, make([]int, len(invertIndex[sid]), len(invertIndex[sid]))))
