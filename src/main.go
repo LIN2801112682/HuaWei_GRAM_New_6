@@ -16,6 +16,7 @@ func TraceMemStats() {
 }
 
 func main() {
+
 	fmt.Println("字典树D：===============================================================")
 	fmt.Println("字典树D内存占用大小：")
 	//TraceMemStats()
