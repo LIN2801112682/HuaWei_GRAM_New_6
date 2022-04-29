@@ -2,7 +2,7 @@ package index07
 
 import (
 	"bufio"
-	"dictionary"
+	"dictionary_C"
 	"fmt"
 	"io"
 	"os"
@@ -11,9 +11,8 @@ import (
 	"time"
 )
 
-//According to a batch of log data, the VG is divided by the dictionary tree, and the index item set is constructed.
-func GenerateIndexTree(filename string, qmin int, qmax int, root *dictionary.TrieTreeNode) (*IndexTree, *IndexTreeNode) {
-	start := time.Now().UnixMicro()
+//According to a batch of log data, the VG is divided by the dictionary_C tree, and the index item set is constructed.
+func GenerateIndexTree(filename string, qmin int, qmax int, root *dictionary_C.TrieTreeNode) (*IndexTree, *IndexTreeNode) {
 	indexTree := NewIndexTree(qmin, qmax)
 	data, err := os.Open(filename)
 	defer data.Close()
@@ -27,7 +26,6 @@ func GenerateIndexTree(filename string, qmin int, qmax int, root *dictionary.Tri
 	var sum3 int64 = 0
 	timeStamp := time.Now().Unix()
 	for {
-		start1 := time.Now().UnixMicro()
 		data, _, eof := buff.ReadLine()
 		if eof == io.EOF {
 			break
@@ -38,12 +36,13 @@ func GenerateIndexTree(filename string, qmin int, qmax int, root *dictionary.Tri
 		timeStamp++
 		sid := NewSeriesId(id, timeStamp)
 		str := string(data)
+		start1 := time.Now().UnixMicro()
 		VGConsBasicIndex(root, qmin, qmax, str, vgMap)
 		var keys = []int{}
 		for key := range vgMap {
 			keys = append(keys, key)
 		}
-		//对map中的key进行排序（map遍历是无序的）
+		//对map中的key进行排序（map遍历是无序的）保证倒排表posList顺序
 		sort.Sort(sort.IntSlice(keys))
 		end1 := time.Now().UnixMicro()
 		sum1 += (end1 - start1)
@@ -72,8 +71,7 @@ func GenerateIndexTree(filename string, qmin int, qmax int, root *dictionary.Tri
 	}
 	indexTree.cout = (int(id))
 	indexTree.UpdateIndexRootFrequency()
-	end := time.Now().UnixMicro()
-	fmt.Println("构建索引项集总花费时间（us）：", end-start)
+	fmt.Println("构建索引项集总花费时间（us）：", sum1+sum2)
 	fmt.Println("读取日志并划分索引项花费时间（us）：", sum1+sum2-sum3)
 	fmt.Println("插入索引树花费时间（us）：", sum3)
 	//indexTree.PrintIndexTree()
@@ -100,7 +98,7 @@ func GenerateQmin2QmaxGrams(gram string, qmin int) {
 	}
 }
 
-func VGConsBasicIndex(root *dictionary.TrieTreeNode, qmin int, qmax int, str string, vgMap map[int]string) {
+func VGConsBasicIndex(root *dictionary_C.TrieTreeNode, qmin int, qmax int, str string, vgMap map[int]string) {
 	len1 := len(str)
 	for p := 0; p < len1-qmin+1; p++ {
 		tSub = ""
@@ -139,7 +137,7 @@ func IsSubStrOfVG(t string, vgMap map[int]string) bool {
 
 var tSub string
 
-func FindLongestGramFromDic(root *dictionary.TrieTreeNode, str string, p int) {
+func FindLongestGramFromDic(root *dictionary_C.TrieTreeNode, str string, p int) {
 	if p < len(str) {
 		c := str[p : p+1]
 		if root.Children()[c[0]] != nil {

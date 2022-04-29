@@ -1,7 +1,7 @@
 package main
 
 import (
-	"dictionary"
+	"dictionary_C"
 	"fmt"
 	"index07"
 	"matchQuery"
@@ -20,7 +20,7 @@ func main() {
 	fmt.Println("字典树D内存占用大小：")
 	//TraceMemStats()
 	fmt.Println()
-	root := dictionary.GenerateDictionaryTree("src/resources/5000Dic.txt", 2, 12, 40) //
+	root := dictionary_C.GenerateDictionaryTree("src/resources/5000Dic.txt", 2, 12, 40) //
 	fmt.Println()
 	//TraceMemStats()
 	fmt.Println()
@@ -30,7 +30,7 @@ func main() {
 	fmt.Println("索引项集内存占用大小：")
 	TraceMemStats()
 	fmt.Println()
-	_, indexTreeNode := index07.GenerateIndexTree("src/resources/500Dic.txt", 2, 12, root) //
+	_, indexTreeNode := index07.GenerateIndexTree("src/resources/500000Index.txt", 2, 12, root) //
 	fmt.Println()
 	TraceMemStats()
 	fmt.Println()
@@ -81,7 +81,7 @@ func main() {
 		fmt.Println("==================================================")
 	}
 
-	var searchQuery2 = [10]string{"french", "nav_tickets_off.gif", "ticket_quest_bg2", "HTTP/1.1", "1.0", "football.gif", "HTTP", "images", "s102438", "venue_paris_stad_header.gif"}
+	/*var searchQuery2 = [10]string{"french", "nav_tickets_off.gif", "ticket_quest_bg2", "HTTP/1.1", "1.0", "football.gif", "HTTP", "images", "s102438", "venue_paris_stad_header.gif"}
 	for i := 0; i < 10; i++ {
 		resInt := matchQuery.MatchSearch(searchQuery2[i], root, indexTreeNode, 2, 12) //get english venues
 		//fmt.Println(resInt)
@@ -95,11 +95,11 @@ func main() {
 		//fmt.Println(resInt)
 		fmt.Println(len(resInt))
 		fmt.Println("==================================================")
-	}
+	}*/
 
-	//resInt := matchQuery.MatchSearch("GET /english/images/", root, indexTreeNode, 2, 12)
-	//fmt.Println(resInt)
-	//fmt.Println(len(resInt))
+	/*resInt := matchQuery.MatchSearch("GET / HTTP/1.0", root, indexTreeNode, 2, 12)
+	fmt.Println(resInt)
+	fmt.Println(len(resInt))*/
 
 	/*map1 := make(map[index07.SeriesId][]int)
 	map2 := make(map[index07.SeriesId][]int)

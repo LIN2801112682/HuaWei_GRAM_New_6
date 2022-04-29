@@ -2,7 +2,7 @@ package matchQuery
 
 import (
 	"bytes"
-	"dictionary"
+	"dictionary_C"
 	"encoding/gob"
 	"fmt"
 	"index07"
@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func MatchSearch(searchStr string, root *dictionary.TrieTreeNode, indexRoot *index07.IndexTreeNode, qmin int, qmax int) []index07.SeriesId {
+func MatchSearch(searchStr string, root *dictionary_C.TrieTreeNode, indexRoot *index07.IndexTreeNode, qmin int, qmax int) []index07.SeriesId {
 	//划分查询串为VG
 	start1 := time.Now().UnixMicro()
 	var vgMap = make(map[int]string)
@@ -59,10 +59,10 @@ func MatchSearch(searchStr string, root *dictionary.TrieTreeNode, indexRoot *ind
 			nowSeaPosition = sortSumInvertList[m].offset
 			var invertIndex index07.Inverted_index = nil
 			invertIndex = sortSumInvertList[m].invertedIndex
+			//fmt.Println(len(invertIndex))
 			if invertIndex == nil {
 				return nil
 			}
-
 			if m == 0 {
 				for sid := range invertIndex {
 					preInverPositionDis = append(preInverPositionDis, NewPosList(sid, make([]int, len(invertIndex[sid]), len(invertIndex[sid]))))

@@ -1,4 +1,4 @@
-package dictionary
+package dictionary_C
 
 type FreqList struct {
 	char string

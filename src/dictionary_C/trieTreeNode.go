@@ -1,4 +1,4 @@
-package dictionary
+package dictionary_C
 
 import (
 	"fmt"
@@ -76,8 +76,7 @@ func (node *TrieTreeNode) PruneStrategyLessT() {
 //Pruning strategy2: freq > T
 //Prune the largest subset, then recursively prune the tree
 func (node *TrieTreeNode) PruneStrategyMoreT(T int) {
-	var freqList []FreqList
-	freqList = make([]FreqList, 128) //一个方法是make指定容量的结构体切片 可通过k取到freqList中每个元素  另一个方法就是不用make，new一个freqList对象再用append函数加入（类似查询中）
+	var freqList = make([]FreqList, 128) //一个方法是make指定容量的结构体切片 可通过k取到freqList中每个元素  另一个方法就是不用make，new一个freqList对象再用append函数加入（类似查询中）
 	k := 0
 	for _, child := range node.children {
 		freqList[k].char = child.data

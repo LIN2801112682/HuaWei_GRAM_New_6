@@ -2,7 +2,7 @@ package indexMaintain
 
 import (
 	"bufio"
-	"dictionary"
+	"dictionary_C"
 	"fmt"
 	"index07"
 	"io"
@@ -12,7 +12,7 @@ import (
 )
 
 //根据一批日志数据通过字典树划分VG，增加到索引项集中
-func AddIndex(filename string, qmin int, qmax int, root *dictionary.TrieTreeNode, indexTree *index07.IndexTree) *index07.IndexTree {
+func AddIndex(filename string, qmin int, qmax int, root *dictionary_C.TrieTreeNode, indexTree *index07.IndexTree) *index07.IndexTree {
 	start := time.Now().UnixMicro()
 	data, err := os.Open(filename)
 	defer data.Close()
